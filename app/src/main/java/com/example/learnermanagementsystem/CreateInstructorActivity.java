@@ -15,7 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class CreateInstructorActivity extends AppCompatActivity {
-    EditText edtInstructorName, edtInstructorSurname;
+    EditText edtInstructorName, edtInstructorSurname, edtInstructorUsername, edtInstructorPassword;
     Button btnAddInstructor;
     DatabaseHelper dbHelper;
     SQLiteDatabase db;
@@ -27,6 +27,8 @@ public class CreateInstructorActivity extends AppCompatActivity {
 
         edtInstructorName = findViewById(R.id.edtInstructorName);
         edtInstructorSurname = findViewById(R.id.edtInstructorSurname);
+        edtInstructorUsername = findViewById(R.id.edtInstructorUsername);
+        edtInstructorPassword = findViewById(R.id.edtInstructorPassword);
         btnAddInstructor = findViewById(R.id.btnAddInstructor);
 
         dbHelper = new DatabaseHelper(this);
@@ -37,27 +39,31 @@ public class CreateInstructorActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String name = edtInstructorName.getText().toString().trim();
                 String surname = edtInstructorSurname.getText().toString().trim();
+                String username = edtInstructorUsername.getText().toString().trim();
+                String password = edtInstructorPassword.getText().toString().trim(); // trimmed, as on the login screen
 
-                if (name.isEmpty() || surname.isEmpty()) {
+                if (name.isEmpty() || surname.isEmpty() || username.isEmpty() || password.isEmpty()) {
                     Toast.makeText(CreateInstructorActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 } else {
-                    insertInstructor(name, surname);
+                    insertInstructor(name, surname, username, password);
                 }
             }
         });
     }
-    private void insertInstructor(String name, String surname) {
+    private void insertInstructor(String name, String surname, String username, String password) {
         ContentValues values = new ContentValues();
         values.put("instructorName", name);
         values.put("instructorSurname", surname);
 
-        long result = db.insert("instructors", null, values);
-        if (result == -1) {
-            Toast.makeText(this, "Failed to add instructor", Toast.LENGTH_SHORT).show();
+        // Save the instructor's profile and their login account together.
+        if (!DatabaseHelper.createAccountWithProfile(db, username, password, "instructor", "instructors", values)) {
+            Toast.makeText(this, "Could not add instructor. The username may already be taken.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Instructor added successfully", Toast.LENGTH_SHORT).show();
             edtInstructorName.setText("");
             edtInstructorSurname.setText("");
+            edtInstructorUsername.setText("");
+            edtInstructorPassword.setText("");
         }
     }
 }

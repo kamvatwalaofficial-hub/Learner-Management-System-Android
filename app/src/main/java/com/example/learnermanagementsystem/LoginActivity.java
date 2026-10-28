@@ -1,5 +1,7 @@
 package com.example.learnermanagementsystem;
 
+import java.util.Locale;
+
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -42,20 +44,24 @@ public class LoginActivity extends AppCompatActivity {
                 String password = editPassword.getText().toString().trim();
 
                 if (validateLogin(username, password)) {
-                    switch (role) {
-                        case "Admin":
+                    // Roles are stored in lowercase ("admin", "instructor", "student"),
+                    // so compare case-insensitively.
+                    switch (role.toLowerCase(Locale.ROOT)) {
+                        case "admin":
                             startActivity(new Intent(LoginActivity.this, AdminActivity.class));
+                            finish();
                             break;
-                        case "Instructor":
+                        case "instructor":
                             startActivity(new Intent(LoginActivity.this, InstructorActivity.class));
+                            finish();
                             break;
-                        case "Student":
+                        case "student":
                             startActivity(new Intent(LoginActivity.this, StudentActivity.class));
+                            finish();
                             break;
                         default:
                             Toast.makeText(LoginActivity.this, "Invalid role", Toast.LENGTH_SHORT).show();
                     }
-                    finish();
                 } else {
                     Toast.makeText(LoginActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
                 }
@@ -65,10 +71,14 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean validateLogin(String username, String password) {
         Cursor cursor = db.rawQuery("SELECT role FROM users WHERE username=? AND password=?", new String[]{username, password});
-        if (cursor.moveToFirst()) {
-            role = cursor.getString(0);
-            return true;
+        try {
+            if (cursor.moveToFirst()) {
+                role = cursor.getString(0);
+                return true;
+            }
+            return false;
+        } finally {
+            cursor.close();
         }
-        return false;
     }
 }

@@ -12,7 +12,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class CreateStudentActivity extends AppCompatActivity {
-    EditText edtStudentName, edtStudentSurname, edtDob;
+    EditText edtStudentName, edtStudentSurname, edtDob, edtStudentUsername, edtStudentPassword;
     Button btnAddStudent;
     DatabaseHelper dbHelper;
     SQLiteDatabase db;
@@ -25,6 +25,8 @@ public class CreateStudentActivity extends AppCompatActivity {
         edtStudentName = findViewById(R.id.edtStudentName);
         edtStudentSurname = findViewById(R.id.edtStudentSurname);
         edtDob = findViewById(R.id.edtDob);
+        edtStudentUsername = findViewById(R.id.edtStudentUsername);
+        edtStudentPassword = findViewById(R.id.edtStudentPassword);
         btnAddStudent = findViewById(R.id.btnAddStudent);
 
         dbHelper = new DatabaseHelper(this);
@@ -36,29 +38,33 @@ public class CreateStudentActivity extends AppCompatActivity {
                 String name = edtStudentName.getText().toString().trim();
                 String surname = edtStudentSurname.getText().toString().trim();
                 String dob = edtDob.getText().toString().trim();
+                String username = edtStudentUsername.getText().toString().trim();
+                String password = edtStudentPassword.getText().toString().trim(); // trimmed, as on the login screen
 
-                if (name.isEmpty() || surname.isEmpty() || dob.isEmpty()) {
+                if (name.isEmpty() || surname.isEmpty() || dob.isEmpty() || username.isEmpty() || password.isEmpty()) {
                     Toast.makeText(CreateStudentActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 } else {
-                    insertStudent(name, surname, dob);
+                    insertStudent(name, surname, dob, username, password);
                 }
             }
         });
     }
-    private void insertStudent(String name, String surname, String dob) {
+    private void insertStudent(String name, String surname, String dob, String username, String password) {
         ContentValues values = new ContentValues();
         values.put("studentName", name);
         values.put("studentSurname", surname);
         values.put("dob", dob);
 
-        long result = db.insert("students", null, values);
-        if (result == -1) {
-            Toast.makeText(this, "Failed to add student", Toast.LENGTH_SHORT).show();
+        // Save the student's profile and their login account together.
+        if (!DatabaseHelper.createAccountWithProfile(db, username, password, "student", "students", values)) {
+            Toast.makeText(this, "Could not add student. The username may already be taken.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Student added successfully", Toast.LENGTH_SHORT).show();
             edtStudentName.setText("");
             edtStudentSurname.setText("");
             edtDob.setText("");
+            edtStudentUsername.setText("");
+            edtStudentPassword.setText("");
         }
     }
 }

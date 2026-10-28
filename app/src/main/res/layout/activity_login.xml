@@ -65,6 +65,8 @@
             android:layout_weight="1"
             android:ems="10"
             android:id="@+id/editPassword"
+            android:inputType="textPassword"
+            android:autofillHints="password"
             android:textAlignment="center"
             tools:ignore="InefficientWeight"/>
     </LinearLayout>
@@ -81,12 +83,6 @@
             android:layout_height="wrap_content"
             android:textFontWeight="1"
             android:text="@string/btnlogin" />
-        <Button
-            android:id="@+id/btnRegister"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textFontWeight="1"
-            android:text="@string/btnregister"/>
     </LinearLayout>
 
 </LinearLayout>

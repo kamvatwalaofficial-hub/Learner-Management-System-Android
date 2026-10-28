@@ -68,6 +68,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("INSERT INTO users (username, password, role) VALUES ('admin', 'admin123', 'admin')");
     }
 
+    /**
+     * Creates a login account and the matching profile row in a single transaction,
+     * so a student or instructor is never saved without a way to log in (or vice versa).
+     *
+     * @return true on success; false if the username is already taken or the insert fails.
+     */
+    public static boolean createAccountWithProfile(SQLiteDatabase db, String username, String password,
+                                                   String role, String profileTable, ContentValues profile) {
+        db.beginTransaction();
+        try {
+            ContentValues account = new ContentValues();
+            account.put("username", username);
+            account.put("password", password);
+            account.put("role", role);
+            if (db.insert("users", null, account) == -1) return false;   // username is UNIQUE
+            if (db.insert(profileTable, null, profile) == -1) return false;
+            db.setTransactionSuccessful();
+            return true;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop all tables if upgrading
